@@ -1,0 +1,32 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+train = pd.read_csv('Train_Big_Mart.txt')
+train.head(10)
+
+test =  pd.read_csv('Test_Big_Mart.txt')
+test.head(10)
+
+train['source'] = 'train'
+test['source'] = 'test'
+df = pd.concat([train,test], ignore_index = True)
+print (train.shape, test.shape, df.shape)
+
+df.apply(lambda x: sum(x.isnull()))
+df.describe()
+df.apply(lambda x: len(x.unique()))
+df.dtypes
+
+col_categories = [x for x in df.dtypes.index if df.dtypes[x] == 'object']
+col_categories = [x for x in col_categories if x not in ['Item_Identifier', 'Outlet_Identifier', 'source']]
+for i in col_categories:
+    print('\nFrequency of variable %s'%i)
+    print(df[i].value_counts())
+    
+item_id = []
+item_weight = []
+
+item_avg_weight = df.pivot_table(values = 'Item_Weight', index = 'Item_Identifier')
+miss_bool = df['Item_Weight'].isnull()
+df.loc[miss_bool, 'Item_Weight' ] = df.loc[miss_bool, 'Item_Identifier'].apply(lambda x: item_avg_weight.at[x, 'Item_Weight'])
